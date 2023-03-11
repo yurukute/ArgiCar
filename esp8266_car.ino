@@ -1,5 +1,6 @@
 #include <ESP8266WiFi.h>
 #include <BlynkSimpleEsp8266.h>
+#include <Servo.h>
 
 //FIRMWARE CONFIGURATION
 #define BLYNK_PRINT Serial
@@ -7,15 +8,23 @@
 #define BLYNK_TEMPLATE_NAME "Quickstart Template"
 #define BLYNK_AUTH_TOKEN "s3_jVWTCNlIVRDlTlMGAvxWOXxsJ84PT"
 
-// Define motor pins
+//Define pins
 #define IN1 D1
 #define IN2 D2
 #define IN3 D3
 #define IN4 D4
+#define moistPin D5
+#define servoPin D8
 
-// Joystick's default values
+//Define servo angles
+#define UPPER 120
+#define LOWER 180
+
+//Joystick's default values
 int x = 50;
 int y = 50;
+
+Servo servo;
 
 void setup() {
   Serial.begin(9600);
@@ -23,6 +32,11 @@ void setup() {
   int motors[] = {IN1, IN2, IN3, IN4};
   for(int i = 0; i < 4; i++)
     pinMode(motors[i], OUTPUT);
+  //Set the sensor pin as an output pin
+  pinMode(moistPin, OUTPUT);
+  //Attach servo
+  servo.attach(D8, 544, 2400);
+  servo.write(UPPER);
   // Initialize the Blynk library
   char ssid[] = ""; //Enter your WIFI name
   char pass[] = ""; //Enter your WIFI password
@@ -34,7 +48,6 @@ void loop() {
   if (y > 70) {
     carForward();
     Serial.println("carForward");
-
   } 
   else if (y < 30) {
     carBackward();
@@ -61,6 +74,29 @@ BLYNK_WRITE(V0) {
 
 BLYNK_WRITE(V1) {
   y = param[0].asInt();
+}
+
+BLYNK_WRITE(V2) {
+  int btnClicked = param.asInt();
+  if(btnClicked){
+    servo.write(LOWER);
+    if (readMoisture() >= 800){
+      water();
+    }
+  }
+  else servo.write(UPPER);
+}
+
+int readMoisture(){
+  digitalWrite(moistPin, HIGH); // Turn the sensor ON
+  delay(10);                    // Allow power to settle
+  int val = analogRead(A0);     // Read the analog value form sensor
+  digitalWrite(moistPin, LOW);  // Turn the sensor OFF
+  return val;
+}
+
+void water(){
+  Serial.print("Watering");
 }
 
 //Motor movement functions

@@ -17,54 +17,41 @@
 #define servoPin D8
 
 //Define servo angles
-#define UPPER 120
-#define LOWER 180
+#define UPPER 45
+#define LOWER 0
 
-//Joystick's default values
-int x = 50;
-int y = 50;
+//Joystick's axises
+#define CENTER 50
+int x = CENTER;
+int y = CENTER;
 
 Servo servo;
 
 void setup() {
   Serial.begin(9600);
+
   //Set the motor pins as output pins
   int motors[] = {IN1, IN2, IN3, IN4};
   for(int i = 0; i < 4; i++)
     pinMode(motors[i], OUTPUT);
+
   //Set the sensor pin as an output pin
   pinMode(moistPin, OUTPUT);
+
   //Attach servo
   servo.attach(D8, 544, 2400);
   servo.write(UPPER);
-  // Initialize the Blynk library
-  char ssid[] = ""; //Enter your WIFI name
-  char pass[] = ""; //Enter your WIFI password
+
+  //Initialize the Blynk library
+  char ssid[] = "STS"; //Enter your WIFI name
+  char pass[] = "12341234"; //Enter your WIFI password
   Blynk.begin(BLYNK_AUTH_TOKEN, ssid, pass, "blynk.cloud", 80);
 }
 
 void loop() {
-  Blynk.run(); // Run the blynk function
-  if (y > 70) {
-    carForward();
-    Serial.println("carForward");
-  } 
-  else if (y < 30) {
-    carBackward();
-    Serial.println("carBackward");
-  } 
-  else if (x < 30) {
-    carLeft();
-    Serial.println("carLeft");
-  } 
-  else if (x > 70) {
-    carRight();
-    Serial.println("carRight");
-  } 
-  else if (x < 70 && x > 30 && y < 70 && y > 30) {
-    carStop();
-    Serial.println("carStop");
-  }
+  Blynk.run();
+  smartCar();
+  delay(100);
 }
 
 //Get Blynk values
@@ -77,14 +64,15 @@ BLYNK_WRITE(V1) {
 }
 
 BLYNK_WRITE(V2) {
-  int btnClicked = param.asInt();
-  if(btnClicked){
+  //int btnClicked = param.asInt();
+  if(param.asInt()){
     servo.write(LOWER);
     if (readMoisture() >= 800){
       water();
     }
+    servo.write(UPPER);
+    Blynk.virtualWrite(V2, LOW);
   }
-  else servo.write(UPPER);
 }
 
 int readMoisture(){
@@ -97,6 +85,33 @@ int readMoisture(){
 
 void water(){
   Serial.print("Watering");
+  delay(3000);
+}
+//Joystick handling
+void smartCar(){
+  int minRange = CENTER - 20;
+  int maxRange = CENTER + 20;
+  if (y > maxRange) {
+    carForward();
+    Serial.println("carForward");
+  }
+  else if (y < minRange) {
+    carBackward();
+    Serial.println("carBackward");
+  }
+  else if (x < minRange) {
+    carLeft();
+    Serial.println("carLeft");
+  }
+  else if (x > maxRange) {
+    carRight();
+    Serial.println("carRight");
+  }
+  else if (minRange <= x && x <= maxRange 
+            && minRange <= y && y <= maxRange){
+    carStop();
+    Serial.println("carStop");
+  }
 }
 
 //Motor movement functions

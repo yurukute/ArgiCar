@@ -15,6 +15,7 @@
 #define IN4 D4
 #define moistPin D5
 #define servoPin D8
+#define relayPin D0
 
 //Define servo angles
 #define UPPER 45
@@ -30,16 +31,14 @@ Servo servo;
 void setup() {
   Serial.begin(9600);
 
-  //Set the motor pins as output pins
-  int motors[] = {IN1, IN2, IN3, IN4};
-  for(int i = 0; i < 4; i++)
-    pinMode(motors[i], OUTPUT);
-
-  //Set the sensor pin as an output pin
-  pinMode(moistPin, OUTPUT);
+  //Set output pins
+  int pins[] = {IN1, IN2, IN3, IN4, moistPin, relayPin};
+  int n = sizeof(pins)/sizeof(int);
+  for(int i = 0; i < n; i++)
+    pinMode(pins[i], OUTPUT);
 
   //Attach servo
-  servo.attach(D8, 544, 2400);
+  servo.attach(servoPin, 544, 2400);
   servo.write(UPPER);
 
   //Initialize the Blynk library
@@ -64,12 +63,18 @@ BLYNK_WRITE(V1) {
 }
 
 BLYNK_WRITE(V2) {
-  //int btnClicked = param.asInt();
   if(param.asInt()){
     servo.write(LOWER);
-    if (readMoisture() >= 800){
+    delay(1000);
+    int moisture = readMoisture();
+    Blynk.virtualWrite(V4, moisture);
+    if (moisture <= 60){
+      Blynk.virtualWrite(V3, "Watering");
       water();
+      Blynk.virtualWrite(V3, "Watering: DONE");
+      Blynk.virtualWrite(V4, readMoisture());
     }
+    else Blynk.virtualWrite(V3, "Not watering");
     servo.write(UPPER);
     Blynk.virtualWrite(V2, LOW);
   }
@@ -78,14 +83,15 @@ BLYNK_WRITE(V2) {
 int readMoisture(){
   digitalWrite(moistPin, HIGH); // Turn the sensor ON
   delay(10);                    // Allow power to settle
-  int val = analogRead(A0);     // Read the analog value form sensor
+  float val = analogRead(A0);   // Read the analog value form sensor
   digitalWrite(moistPin, LOW);  // Turn the sensor OFF
-  return val;
+  return 100 - (val/1023.00)*100;
 }
 
 void water(){
-  Serial.print("Watering");
-  delay(3000);
+  digitalWrite(relayPin, HIGH);
+  delay(5000);
+  digitalWrite(relayPin, LOW);
 }
 //Joystick handling
 void smartCar(){

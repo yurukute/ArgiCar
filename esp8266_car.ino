@@ -2,13 +2,13 @@
 #include <BlynkSimpleEsp8266.h>
 #include <Servo.h>
 
-//FIRMWARE CONFIGURATION
+// FIRMWARE CONFIGURATION
 #define BLYNK_PRINT Serial
 #define BLYNK_TEMPLATE_ID "TMPLwxz7Etgp"
 #define BLYNK_TEMPLATE_NAME "Quickstart Template"
 #define BLYNK_AUTH_TOKEN "s3_jVWTCNlIVRDlTlMGAvxWOXxsJ84PT"
 
-//Define pins
+// Define pins
 #define IN1 D1
 #define IN2 D2
 #define IN3 D3
@@ -17,11 +17,11 @@
 #define servoPin D8
 #define relayPin D0
 
-//Define servo angles
+// Define servo angles
 #define UPPER 45
 #define LOWER 0
 
-//Joystick's axises
+// Joystick's axises
 #define CENTER 50
 int x = CENTER;
 int y = CENTER;
@@ -31,19 +31,19 @@ Servo servo;
 void setup() {
   Serial.begin(9600);
 
-  //Set output pins
+  // Set output pins
   int pins[] = {IN1, IN2, IN3, IN4, moistPin, relayPin};
   int n = sizeof(pins)/sizeof(int);
   for(int i = 0; i < n; i++)
     pinMode(pins[i], OUTPUT);
 
-  //Attach servo
+  // Attach servo
   servo.attach(servoPin, 544, 2400);
   servo.write(UPPER);
 
-  //Initialize the Blynk library
-  char ssid[] = "STS"; //Enter your WIFI name
-  char pass[] = "12341234"; //Enter your WIFI password
+  // Initialize the Blynk library
+  char ssid[] = "B1906647"; //Enter your WIFI name
+  char pass[] = "88888888"; //Enter your WIFI password
   Blynk.begin(BLYNK_AUTH_TOKEN, ssid, pass, "blynk.cloud", 80);
 }
 
@@ -53,7 +53,7 @@ void loop() {
   delay(100);
 }
 
-//Get Blynk values
+// Get Blynk values
 BLYNK_WRITE(V0) {
   x = param[0].asInt();
 }
@@ -93,7 +93,8 @@ void water(){
   delay(5000);
   digitalWrite(relayPin, LOW);
 }
-//Joystick handling
+
+// Joystick handling
 void smartCar(){
   int minRange = CENTER - 20;
   int maxRange = CENTER + 20;
@@ -120,7 +121,7 @@ void smartCar(){
   }
 }
 
-//Motor movement functions
+// Motor movement functions
 void carForward() {
   digitalWrite(IN1, HIGH);
   digitalWrite(IN2, LOW);

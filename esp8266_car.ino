@@ -16,6 +16,8 @@
 #define moistPin D5
 #define servoPin D8
 #define relayPin D0
+#define trigPin  S0
+#define echoPin  SK
 
 // Define servo angles
 #define UPPER 45
@@ -36,6 +38,10 @@ void setup() {
   int n = sizeof(pins)/sizeof(int);
   for(int i = 0; i < n; i++)
     pinMode(pins[i], OUTPUT);
+
+  // Default voltage for relay
+  // Use HIGH on low-voltage switching relay
+  digitalWrite(relayPin, HIGH);
 
   // Attach servo
   servo.attach(servoPin, 544, 2400);
@@ -89,9 +95,10 @@ int readMoisture(){
 }
 
 void water(){
-  digitalWrite(relayPin, HIGH);
+  int signal = digitalRead(relayPin);
+  digitalWrite(relayPin, !signal);
   delay(5000);
-  digitalWrite(relayPin, LOW);
+  digitalWrite(relayPin, signal);
 }
 
 // Joystick handling

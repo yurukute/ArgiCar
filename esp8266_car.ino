@@ -14,10 +14,10 @@
 #define IN3 D3
 #define IN4 D4
 #define moistPin D5
+#define echoPin  D6
+#define trigPin  D7
 #define servoPin D8
 #define relayPin D0
-#define trigPin  S0
-#define echoPin  SK
 
 // Define servo angles
 #define UPPER 45

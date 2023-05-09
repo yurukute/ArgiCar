@@ -31,6 +31,7 @@ int y = CENTER;
 // Define tank's height
 #define MAXHEIGHT 6.60
 int waterLevel = 100;
+int waterDuration = 5;
 
 Servo servo;
 
@@ -73,6 +74,7 @@ BLYNK_WRITE(V1) {
   y = param[0].asInt();
 }
 
+// Water button
 BLYNK_WRITE(V2) {
   if(param.asInt()){
     servo.write(LOWER);
@@ -89,6 +91,11 @@ BLYNK_WRITE(V2) {
     servo.write(UPPER);
     Blynk.virtualWrite(V2, LOW);
   }
+}
+
+// Water slider
+BLYNK_WRITE(V5){
+  waterDuration = param[0].asInt();
 }
 
 void sendNotification(String message){
@@ -125,7 +132,7 @@ void updateWaterLevel(){
 void water(){
   int signal = digitalRead(relayPin);
   digitalWrite(relayPin, !signal);
-  delay(5000);
+  delay(waterDuration*1000);
   digitalWrite(relayPin, signal);
 }
 

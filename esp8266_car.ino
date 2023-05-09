@@ -28,6 +28,10 @@
 int x = CENTER;
 int y = CENTER;
 
+// Define tank's height
+#define MAXHEIGHT 6.60
+int waterLevel = 100;
+
 Servo servo;
 
 void setup() {
@@ -55,6 +59,7 @@ void setup() {
 
 void loop() {
   Blynk.run();
+  updateWaterLevel();
   smartCar();
   delay(100);
 }
@@ -86,12 +91,35 @@ BLYNK_WRITE(V2) {
   }
 }
 
+void sendNotification(String message){
+  Serial.println("Notification sent!" + message);
+  Blynk.virtualWrite(V6, message);
+}
+
 int readMoisture(){
   digitalWrite(moistPin, HIGH); // Turn the sensor ON
   delay(10);                    // Allow power to settle
   float val = analogRead(A0);   // Read the analog value form sensor
   digitalWrite(moistPin, LOW);  // Turn the sensor OFF
   return 100 - (val/1023.00)*100;
+}
+
+void updateWaterLevel(){
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+
+  float duration = pulseIn(echoPin, HIGH);
+  float distance = (duration*.0343)/2;
+  waterLevel = (MAXHEIGHT - distance)/(MAXHEIGHT - 2)*100;
+  Blynk.virtualWrite(V3, waterLevel);
+  if (waterLevel <= 0){
+    sendNotification("OUT OF WATER!!");
+  }
+  else
+    sendNotification(" ");
 }
 
 void water(){
